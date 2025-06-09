@@ -1,0 +1,146 @@
+// stage1.c
+#include <stdio.h>
+
+// 훈련 단계 수
+#define TRAINING_COUNT 8
+
+// 메뉴명 배열
+const char *main_menu[] = { "오디션 관리", "훈련", "데뷔" };
+const char *training_menu[] = {
+    "체력과 지식",                  // 1단계
+    "자기관리 및 팀워크",          // 2단계
+    "언어 및 발음",                // 3단계
+    "보컬",                        // 4단계
+    "댄스",                        // 5단계
+    "비주얼 및 이미지",            // 6단계
+    "연기 및 무대 퍼포먼스",        // 7단계
+    "팬 소통"                      // 8단계
+};
+
+// 훈련 통과 결과 배열 ('P' or 'F' or ' ')
+char training_result[TRAINING_COUNT] = { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' };
+
+// 함수 선언
+void showMainMenu();
+void showTrainingMenu();
+int getInputNumber();
+char getYNInput();
+char getPFInput();
+
+int main() {
+    while (1) {
+        showMainMenu();
+        printf("\n주 메뉴 선택 (1-3 / Q, q, 0 종료): ");
+        int choice = getInputNumber();
+
+        if (choice == 0) break;
+
+        switch (choice) {
+            case 1:
+                printf("\n[오디션 관리 시스템은 아직 구현되지 않았습니다.]\n");
+                break;
+            case 2:
+                showTrainingMenu();
+                break;
+            case 3:
+                printf("\n[데뷔 시스템은 아직 구현되지 않았습니다.]\n");
+                break;
+            default:
+                printf("\n잘못된 입력입니다. 다시 선택하세요.\n");
+        }
+    }
+
+    printf("\n프로그램을 종료합니다.\n");
+    return 0;
+}
+
+void showMainMenu() {
+    printf("\n===== 마그라테아: 주 메뉴 =====\n");
+    int i;
+    for (i = 0; i < 3; i++) {
+        printf("%d. %s\n", i + 1, main_menu[i]);
+    }
+}
+
+void showTrainingMenu() {
+    while (1) {
+        printf("\n----- 훈련 메뉴 -----\n");
+        int i;
+        for (i = 0; i < TRAINING_COUNT; i++) {
+            printf("%d. %s [%c]\n", i + 1, training_menu[i], training_result[i]);
+        }
+        printf("훈련 메뉴 선택 (0: 상위 메뉴로): ");
+        int choice = getInputNumber();
+
+        if (choice == 0) break;
+        if (choice < 1 || choice > TRAINING_COUNT) {
+            printf("⚠️ 잘못된 선택입니다.\n");
+            continue;
+        }
+
+        int index = choice - 1;
+
+        // 이미 통과했으면 다시 선택 불가
+        if (training_result[index] == 'P') {
+            printf("✅ 이미 통과한 훈련입니다.\n");
+            continue;
+        }
+
+        // 1단계 조건 체크
+        if (index == 0) {
+            // 통과 안 했으면 진행
+        } else if (index == 1) {
+            if (training_result[0] != 'P') {
+                printf("⚠️ 1단계를 먼저 통과해야 합니다.\n");
+                continue;
+            }
+        } else {
+            if (training_result[0] != 'P' || training_result[1] != 'P') {
+                printf("⚠️ 1단계와 2단계를 모두 통과해야 선택할 수 있습니다.\n");
+                continue;
+            }
+        }
+
+        printf("“%s” 훈련을 선택하셨습니다.\n", training_menu[index]);
+        printf("평가 결과를 입력하시겠습니까? (Y/N): ");
+        if (getYNInput() == 'Y') {
+            printf("훈련을 마치고 인증에 통과했나요? (P/F): ");
+            training_result[index] = getPFInput();
+        } else {
+            printf("훈련 메뉴로 돌아갑니다.\n");
+        }
+    }
+}
+
+int getInputNumber() {
+    char buffer[10];
+    if (!fgets(buffer, sizeof(buffer), stdin)) {
+        return 0;
+    }
+
+    if (buffer[0] == 'Q' || buffer[0] == 'q' || buffer[0] == '\n') {
+        return 0;
+    }
+
+    return atoi(buffer);
+}
+
+char getYNInput() {
+    char ch;
+    while (1) {
+        scanf(" %c", &ch);
+        if (ch == 'Y' || ch == 'y') return 'Y';
+        if (ch == 'N' || ch == 'n') return 'N';
+        printf("Y 또는 N을 입력하세요: ");
+    }
+}
+
+char getPFInput() {
+    char ch;
+    while (1) {
+        scanf(" %c", &ch);
+        if (ch == 'P' || ch == 'p') return 'P';
+        if (ch == 'F' || ch == 'f') return 'F';
+        printf("P 또는 F를 입력하세요: ");
+    }
+}
