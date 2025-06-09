@@ -1,0 +1,140 @@
+// decision.c
+#include <stdio.h>
+#include <math.h>
+
+#define MAX_MEMBER 5
+#define FIELD_COUNT 9
+
+// 훈련 분야 ENUM
+enum Field {
+    체력, 지식, 자기관리, 팀워크, 한국어, 보컬, 댄스, 비주얼, 연기
+};
+
+// 훈련 분야 이름
+const char *field_names[FIELD_COUNT] = {
+    "체력", "지식", "자기관리", "팀워크", "한국어",
+    "보컬", "댄스", "비주얼", "연기"
+};
+
+// 탁월한 점수는 사용자 설정 가능
+int EXCELLENT_SCORE = 95;
+
+int main() {
+    int team[MAX_MEMBER][FIELD_COUNT];
+    int team_avg[FIELD_COUNT] = {0};
+    int total_scores[MAX_MEMBER] = {0};
+    int team_total = 0;
+    int team_avg_total;
+    int min_score;
+    int i, j;
+
+    printf("팀 평균 통과 점수 입력 (11점 만점): ");
+    scanf("%d", &team_avg_total);
+
+    printf("개인 최소 점수 입력 (11점 만점): ");
+    scanf("%d", &min_score);
+
+    printf("탁월한 점수 입력 (95~100점): ");
+    scanf("%d", &EXCELLENT_SCORE);
+
+    // 점수 입력
+    for (i = 0; i < MAX_MEMBER; i++) {
+        printf("\n--- %d번 멤버 점수 입력 ---\n", i + 1);
+        int member_total = 1; // 최소 1점 보장
+        for (j = 0; j < FIELD_COUNT; j++) {
+            int score;
+            printf("%s 점수 입력 (0~11): ", field_names[j]);
+            scanf("%d", &score);
+
+            // 개인 최소 점수 미달 체크
+            if (score < min_score) {
+                printf("⚠️ '%s' 점수가 개인 최소 점수 %d점에 미달합니다.\n", field_names[j], min_score);
+                printf("→ 팀 전체가 해당 분야를 다시 응시해야 합니다.\n");
+                return 0;
+            }
+
+            // 저장
+            team[i][j] = score;
+            member_total += score;
+            team_avg[j] += score;
+        }
+        total_scores[i] = member_total;
+        team_total += member_total;
+    }
+
+    // 팀 평균 총점
+    team_avg_total = team_total / MAX_MEMBER;
+
+    // 최고 점수 멤버 평가
+    int final_score = 0;
+    printf("\n평가 위원장 점수 입력:\n");
+    for (i = 0; i < FIELD_COUNT; i++) {
+        int score;
+        printf("%s 점수 입력 (0~11): ", field_names[i]);
+        scanf("%d", &score);
+        final_score += score;
+    }
+    final_score++; // 최소 1점 제공
+
+    printf("\n▶ 총점: %d점\n", final_score);
+
+    // 데뷔 결정
+    enum { DEBUT, FINAL_DECISION, RETEST, FAIL } result;
+    switch (final_score / 10) {
+        case 10:
+        case 9:
+            if (final_score >= EXCELLENT_SCORE) result = DEBUT;
+            else result = FINAL_DECISION;
+            break;
+        case 8:
+            result = RETEST;
+            break;
+        default:
+            result = FAIL;
+    }
+
+    switch (result) {
+        case DEBUT:
+            printf("🎉 축하합니다. 무대 데뷔가 결정되었습니다.\n");
+            break;
+        case FINAL_DECISION:
+            printf("📝 데뷔 인증 팀의 평가 회의에서 최종 결정합니다.\n");
+            break;
+        case RETEST: {
+            // 3개 가장 낮은 분야 찾기
+            int scores[FIELD_COUNT];
+            for (i = 0; i < FIELD_COUNT; i++) {
+                scores[i] = 0;
+                for (j = 0; j < MAX_MEMBER; j++) {
+                    scores[i] += team[j][i];
+                }
+            }
+
+            // 단순 선택 정렬로 가장 낮은 점수 3개 찾기
+            for (i = 0; i < FIELD_COUNT - 1; i++) {
+                for (j = i + 1; j < FIELD_COUNT; j++) {
+                    if (scores[i] > scores[j]) {
+                        int temp = scores[i];
+                        scores[i] = scores[j];
+                        scores[j] = temp;
+
+                        const char *tmp_name = field_names[i];
+                        field_names[i] = field_names[j];
+                        field_names[j] = tmp_name;
+                    }
+                }
+            }
+
+            printf("📌 30일 이후에 통과 점수가 가장 낮은 분야 재응시 필요:\n");
+            for (i = 0; i < 3; i++) {
+                printf("- %s\n", field_names[i]);
+            }
+            break;
+        }
+        case FAIL:
+            printf("⛔ 데뷔 조건을 충족하지 못했습니다.\n");
+            break;
+    }
+
+    return 0;
+}
