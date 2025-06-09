@@ -1,0 +1,23 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_MEMBERS 5
+#define TEST_ITEMS 7
+#define MAX_NAME_LENGTH 30
+#define MAX_INPUT_LENGTH 256
+
+const char* health_tests[TEST_ITEMS] = {
+    "1마일 러닝 (분)", "스피드 스프린트 (초)", "푸시업 (분)",
+    "스쿼트 (분)", "팔굽혀 펴기 (분)", "수영 (분)", "무게 들기 (배수)"
+};
+
+char milliways_members[MAX_MEMBERS][2][MAX_NAME_LENGTH] = {
+    {"김고은", "은비"},
+    {"박원철", "철이"},
+    {"이영진", "영지"},
+    {"최혜경", "혜요"},
+    {"정아서", "아서"}
+};
+
+float health_scores[MAX_MEMBERS][TEST_ITEMS] = {0};
