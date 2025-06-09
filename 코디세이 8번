@@ -1,0 +1,114 @@
+// applytest.c
+#include <stdio.h>
+#include <math.h>
+
+#define MAX_FIELDS 9
+#define MAX_TESTS 20
+
+// 훈련 분야 목록
+const char *fields[MAX_FIELDS] = {
+    "체력", "지식", "자기관리", "팀워크", "한국어", 
+    "보컬", "댄스", "비주얼", "연기"
+};
+
+// 시험 예약 정보 저장용 배열
+int applied_fields[MAX_TESTS];
+int applied_dates[MAX_TESTS];
+int test_count = 0;
+
+int training_start_date = 0;
+int today = 20250609; // 현재 날짜는 고정값. 실제 사용 시 사용자 입력 또는 시스템 날짜 필요
+
+// 날짜 차이 계산 함수 (YYYYMMDD 포맷 기준 단순 계산)
+int days_between(int start, int end) {
+    int sy = start / 10000;
+    int sm = (start / 100) % 100;
+    int sd = start % 100;
+
+    int ey = end / 10000;
+    int em = (end / 100) % 100;
+    int ed = end % 100;
+
+    return ((ey - sy) * 365) + ((em - sm) * 30) + (ed - sd); // 단순화된 날짜 차이
+}
+
+// 시험실 번호 랜덤 할당용 함수
+int get_random_room(int seed) {
+    return (seed * 137) % 10 + 1;
+}
+
+int is_field_allowed(int field_index) {
+    if (field_index == 0 || field_index == 1) return 1; // 체력, 지식
+    int passed_basic = 0;
+    for (int i = 0; i < test_count; i++) {
+        if ((applied_fields[i] == 0 || applied_fields[i] == 1) &&
+            days_between(training_start_date, applied_dates[i]) >= 30) {
+            passed_basic++;
+        }
+    }
+    if (field_index == 2 || field_index == 3) {
+        return passed_basic >= 2;
+    }
+    return passed_basic >= 2; // 나머지는 순서 무관
+}
+
+void check_reminder_and_today() {
+    for (int i = 0; i < test_count; i++) {
+        int d = days_between(today, applied_dates[i]);
+        if (d == 0) {
+            printf("오늘은 '%s' 인증 시험일입니다. 시험실: %d번\n", fields[applied_fields[i]], get_random_room(applied_dates[i]));
+        } else if (d > 0 && d <= 10) {
+            printf("시험 리마인더: '%s' 시험이 %d일 남았습니다.\n", fields[applied_fields[i]], d);
+        }
+    }
+}
+
+int main() {
+    int i, field, date;
+
+    printf("훈련 시작일을 입력하세요 (YYYYMMDD): ");
+    scanf("%d", &training_start_date);
+
+    while (1) {
+        printf("\n===== 인증 시험 예약 시스템 =====\n");
+        for (i = 0; i < MAX_FIELDS; i++) {
+            printf("%d. %s\n", i + 1, fields[i]);
+        }
+        printf("0. 종료\n");
+        printf("응시할 인증 분야 번호를 선택하세요: ");
+        scanf("%d", &field);
+
+        if (field == 0) break;
+        if (field < 1 || field > MAX_FIELDS) {
+            printf("잘못된 번호입니다.\n");
+            continue;
+        }
+        field--; // 배열 인덱스 조정
+
+        if (!is_field_allowed(field)) {
+            printf("이 분야는 아직 응시할 수 없습니다.\n");
+            continue;
+        }
+
+        printf("응시할 날짜를 입력하세요 (YYYYMMDD): ");
+        scanf("%d", &date);
+
+        int d = days_between(training_start_date, date);
+        if (d < 30 || d > 100) {
+            printf("훈련 시작일 기준 30일 이후~100일 이내여야 합니다.\n");
+            continue;
+        }
+
+        applied_fields[test_count] = field;
+        applied_dates[test_count] = date;
+        test_count++;
+
+        printf("'%s' 인증 시험이 %d일차 (%d)에 예약되었습니다.\n", fields[field], d, date);
+    }
+
+    // 리마인더 및 시험 당일 출력
+    printf("\n===== 인증 시험 일정 알림 =====\n");
+    check_reminder_and_today();
+
+    return 0;
+}
