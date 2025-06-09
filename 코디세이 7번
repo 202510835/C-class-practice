@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <string.h>
+
+#define N 2 // 불합격자 수
+#define M 4 // 합격자 수
+#define MAX_MSG 5 // 각 불합격자당 최대 메시지 수
+
+// 수정 불가능한 불합격자 배열 (memorial##_arr)
+const char memorial01_arr[N][100] = {
+    "김서현,ksh001@cody.com,milliways",
+    "Sophie Tan,sophie.t@cody.com,milliways"
+};
+
+// 롤링페이퍼 메시지 저장 배열 (JSON 형식)
+char rollingpp01_arr[N][MAX_MSG][100];
+int msg_counts[N] = {0, 0}; // 각 불합격자 메시지 수
+
+// 불합격자 이름 추출 함수
+void get_name(const char* data, char* name) {
+    int i = 0;
+    while (data[i] != ',' && data[i] != '\0') {
+        name[i] = data[i];
+        i++;
+    }
+    name[i] = '\0';
+}
+
+// 불합격자 이메일 추출 함수
+void get_email(const char* data, char* email) {
+    int i = 0, j = 0, comma = 0;
+    while (data[i] != '\0') {
+        if (data[i] == ',') {
+            comma++;
+            i++;
+            continue;
+        }
+        if (comma == 1) {
+            email[j++] = data[i];
+        }
+        i++;
+    }
+    email[j] = '\0';
+}
+
+// 불합격자 이름으로 인덱스 찾기
+int find_index_by_name(const char* name) {
+    char temp[50];
+    for (int i = 0; i < N; i++) {
+        get_name(memorial01_arr[i], temp);
+        if (strcmp(temp, name) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int main() {
+    char name[50], message[100];
+    int i, idx;
+
+    printf("########################################\n");
+    printf("#     롤링페이퍼 메시지 입력 시작     #\n");
+    printf("########################################\n");
+
+    // 합격자들이 메시지 입력
+    for (i = 0; i < M; i++) {
+        printf("\n합격자 %d명 중 %d번째 메시지 작성\n", M, i + 1);
+        printf("불합격자 이름을 입력하세요: ");
+        scanf(" %[^\n]", name);
+
+        idx = find_index_by_name(name);
+        if (idx == -1 || msg_counts[idx] >= MAX_MSG) {
+            printf(">> 메시지를 입력할 수 없습니다. 잘못된 이름이거나 최대 메시지를 초과했습니다.\n");
+            i--;
+            continue;
+        }
+
+        printf("메시지를 입력하세요: ");
+        scanf(" %[^\n]", message);
+
+        sprintf(rollingpp01_arr[idx][msg_counts[idx]], "{\"%s\": \"%s\"}", name, message);
+        msg_counts[idx]++;
+    }
+
+    // 메시지 출력 및 메일 전송 여부
+    printf("\n========================================\n");
+    printf("불합격자 롤링페이퍼 메시지 보기\n");
+    printf("불합격자 이름을 입력하세요: ");
+    scanf(" %[^\n]", name);
+
+    idx = find_index_by_name(name);
+    if (idx == -1) {
+        printf(">> 해당 불합격자를 찾을 수 없습니다.\n");
+        return 0;
+    }
+
+    printf("\n[%s]에게 보내는 메시지:\n", name);
+    for (i = 0; i < msg_counts[idx]; i++) {
+        printf("- %s\n", rollingpp01_arr[idx][i]);
+    }
+
+    // 보너스: 메일 전송
+    char email[50], choice;
+    get_email(memorial01_arr[idx], email);
+
+    printf("\n메일을 %s 에게 전송하시겠습니까? (Y/N): ", email);
+    scanf(" %c", &choice);
+
+    if (choice == 'Y' || choice == 'y') {
+        printf("\n메일을 전송했습니다. 내용:\n");
+        for (i = 0; i < msg_counts[idx]; i++) {
+            printf(">> %s\n", rollingpp01_arr[idx][i]);
+        }
+    } else {
+        printf("메일 전송을 취소했습니다.\n");
+    }
+
+    return 0;
+}
